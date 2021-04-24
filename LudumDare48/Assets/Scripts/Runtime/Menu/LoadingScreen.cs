@@ -33,12 +33,9 @@ namespace LD48
             }
         }
 
-        private System.Collections.IEnumerator Start() 
+        private void Start() 
         {
             DOTween.Init(true, true, LogBehaviour.ErrorsOnly).SetCapacity(10, 50);
-            this._Show();
-            yield return new WaitForSeconds(3);
-            this._Hide();
         }
 
         private void Update()
