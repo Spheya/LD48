@@ -120,8 +120,10 @@ namespace LD48
             //4. update velocity based on travelled distance.
             if(hit)
             {
-                Vector2 maxTravelDist = hit.distance * direction * 0.9f; //tiny distance away to maybe fix getting stuck on collision?
+                //tiny distance away stops the player from getting stuck, but causes some stutter.
+                Vector2 maxTravelDist = (hit.distance - 0.05f) * direction; 
                 transform.position = origin + maxTravelDist;
+                //remove velocity based on hit.normal?
                 velocity = maxTravelDist / deltaTime;
             }
             else
