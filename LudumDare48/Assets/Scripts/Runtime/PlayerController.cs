@@ -22,7 +22,7 @@ namespace LD48
         [SerializeField]
         private LayerMask groundMask;
         [SerializeField]
-        private float verticalGroundCheckOffset = -1.2f, groundCheckTolerance = 0.15f, groundSnapDistance = 0.075f;
+        private float verticalGroundCheckOffset = -1.2f, groundCheckTolerance = 0.15f, groundSnapDistance = 0.075f, verticalOriginToGroundOffset = -1;
         [SerializeField]
         private float speed, jumpSpeed = 1.5f;
         [SerializeField]
@@ -72,6 +72,12 @@ namespace LD48
 
         }
 
+        private void OnDrawGizmos() 
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(base.transform.position + new Vector3(0, verticalGroundCheckOffset), groundCheckTolerance);
+        }
+
         //In here the speed is actually used, and collision is handled.
         private void HandleMovement()
         {
@@ -81,13 +87,14 @@ namespace LD48
             //0.5 check for ground.
             Vector2 origin = transform.position;
             Vector2 groundCheckPos = origin;
-            groundCheckPos.y += verticalGroundCheckOffset;
+            groundCheckPos.y += verticalOriginToGroundOffset;
+            Physics2D.queriesHitTriggers = false;
             Collider2D groundCollider = Physics2D.OverlapCircle(groundCheckPos, groundCheckTolerance, groundMask);
             isGrounded = groundCollider;
             //0.75 snap to the surface.
             if(isGrounded && velocity.y <= 0)
             {
-                float groundY = groundCollider.bounds.max.y - verticalGroundCheckOffset;
+                float groundY = groundCollider.bounds.max.y - verticalOriginToGroundOffset;
                 if(Mathf.Abs(groundY - origin.y) <= groundSnapDistance)
                 {
                     origin.y = groundY; 
@@ -103,37 +110,58 @@ namespace LD48
             {
                 desiredVelocity.y -= 9.81f * deltaTime;
             }
+            MoveWithCollision();
 
-            //2. use the desired velocity to check where to go
-            Vector2 translation = desiredVelocity * deltaTime;
-            Vector2 projectedPosition = origin + translation;
-
-            //3. cast the collider, check for collision on the way there.
-            RaycastHit2D[] hits = new RaycastHit2D[5];
-            float distance = translation.magnitude;
-            Vector2 direction = translation / distance;
-
-            //I HAVE to write this long line because for some retarded reason, unity wont allow CapsuleCollider2D.Cast without a rigidbody???
-            //ITS DOING THE EXACT SAME THING, WHY DOESNT ONE WORK WITHOUT A RIGIDBODY????
-            Physics2D.queriesHitTriggers = false; //just make this query ignore triggers real quick <.<
-            RaycastHit2D hit = Physics2D.CapsuleCast(origin + collider.offset, collider.size, collider.direction, 0, direction, distance, groundMask);
-            Physics2D.queriesHitTriggers = true;
-            Debug.DrawRay(origin, translation.normalized, Color.red);
-            //4. update velocity based on travelled distance.
-            if(hit)
+            //Making this bit a local method because i shouldnt think about using this outside of this context
+            //also because it needs to be able to call itself without fucking things up lol.
+            void MoveWithCollision()
             {
-                //tiny distance away stops the player from getting stuck, but causes some stutter.
-                Vector2 maxTravelDist = (hit.distance - 0.05f) * direction; 
-                transform.position = origin + maxTravelDist;
-                //remove velocity based on hit.normal?
-                velocity = maxTravelDist / deltaTime;
-            }
-            else
-            {
-                transform.position = projectedPosition;
-                velocity = desiredVelocity;
+                //2. use the desired velocity to check where to go
+                Vector2 translation = desiredVelocity * deltaTime;
+                Vector2 projectedPosition = origin + translation;
+
+                //3. cast the collider, check for collision on the way there.
+                RaycastHit2D[] hits = new RaycastHit2D[5];
+                float distance = translation.magnitude;
+                Vector2 direction = translation / distance;
+
+                //I HAVE to write this long line because for some stupid reason, unity wont allow CapsuleCollider2D.Cast without a rigidbody???
+                //ITS DOING THE EXACT SAME THING, WHY DOESNT ONE WORK WITHOUT A RIGIDBODY????
+                Physics2D.queriesHitTriggers = false; //just make this query ignore triggers real quick <.<
+                RaycastHit2D hit = Physics2D.CapsuleCast(origin + collider.offset, collider.size, collider.direction, 0, direction, distance, groundMask);
+                Physics2D.queriesHitTriggers = true;
+                
+                //4. update velocity based on travelled distance.
+                if(hit)
+                {
+                    //tiny distance away stops the player from getting stuck, but causes some stutter.
+                    Vector2 maxTravelDist = Mathf.Max(0, hit.distance - 0.05f) * direction; 
+                    //if bumping into the ceiling, reset velocity to 0, the player should just fall down afterwards.
+                    if(hit.normal.y < -0.9f && desiredVelocity.y > 0f)
+                    {
+                        desiredVelocity.y = 0;
+                        MoveWithCollision();
+                        return;
+                    }
+                    if((hit.normal.x > 0.9f && desiredVelocity.x < 0f) || (hit.normal.x < -0.9f && desiredVelocity.x > 0f))
+                    {
+                        desiredVelocity.x = 0;
+                        MoveWithCollision();
+                        return;
+                    }
+                    transform.position = origin + maxTravelDist;
+                    //remove velocity based on hit.normal?
+                    velocity = maxTravelDist / deltaTime;
+                    
+                }
+                else
+                {
+                    transform.position = projectedPosition;
+                    velocity = desiredVelocity;
+                }
             }
         }
+
 
         private void Animate()
         {
@@ -169,7 +197,7 @@ namespace LD48
                     {
                         //a benefit of writing our own "custom physics" is that we can exchange this for, or just add entirely new messages or events.
                         col.SendMessage("OnTriggerEnter2D", collider, SendMessageOptions.DontRequireReceiver);
-                        print("found trigger");
+                        //print("found trigger");
                         knownTriggers.Add(triggerID);
                     }
                 }
