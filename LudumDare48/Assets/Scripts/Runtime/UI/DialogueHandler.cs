@@ -1,0 +1,101 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
+
+namespace LD48
+{
+    public class DialogueHandler : MonoBehaviour
+    {
+        [SerializeField]
+        private DialogueOption[] options;
+        [SerializeField]
+        private float distance = 400f, angleOffset = 15f;
+
+        [SerializeField]
+        private TextMeshProUGUI npcText;
+        [SerializeField, Tooltip("how many characters per second?")]
+        private float textSpeed = 10;
+        [SerializeField]
+        private CanvasGroup optionsGroup;
+
+        //the currently active dialogue object.
+        [SerializeField]
+        Dialogue dialogue;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            for(int i = 0; i < options.Length; i++)
+            {
+                options[i].Handler = this;
+                options[i].gameObject.SetActive(false);
+            }
+            dialogue.Reset();
+            Continue();
+        }
+
+        public void Init(Dialogue dia)
+        {
+            dialogue = dia;
+
+        }
+
+        //The player has clicked an option and the dialogue should now continue.
+        public void Continue()
+        {
+            //advance the dialogue to the next bit.
+            if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
+            { 
+                //TODO: handle the dialogue ending.
+                return;
+            }
+            //clear the npc chat box.
+            npcText.text = "";
+
+            //create the sequence.
+            var sequence = DOTween.Sequence();
+            //1. Fade out all the options.
+            sequence.Append(optionsGroup.DOFade(endValue: 0.0f, duration: 0.5f)); //.OnComplete(() => source.Play())
+            //2. show the new text, then set up the options.
+            float textDuration = (float) snippet.npcText.Length / textSpeed;
+            sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, snippet.npcText, textDuration).OnComplete(() => SetupOptions(snippet)));
+            //3. fade the options back in.
+            sequence.Append(optionsGroup.DOFade(endValue: 1.0f, duration: 0.5f).SetDelay(0.5f));
+            //4. start the sequence.
+            sequence.PlayForward();
+        }
+
+        //TODO: Handle when 0 replies are given. Wait for a short delay, then wait for player input, and continue maybe?
+        private void SetupOptions(Dialogue.DialogueSnippet snippet)
+        {
+            int i = 0;
+            int replyCount = snippet.playerReplies.Length;
+            //the total spread of the options in degrees.
+            float spread = ((float)replyCount - 1f) * angleOffset;
+            //start at half the negative spread.
+            float angle = spread * -0.5f;
+            for(; i < replyCount; i++)
+            {
+                options[i].gameObject.SetActive(true);
+                options[i].SetText(snippet.playerReplies[i]);
+                
+                //place the option.
+                Vector2 baseOffset = new Vector2(distance, 0);
+                Vector2 rotatedOffset = Quaternion.AngleAxis(angle, Vector3.forward) * baseOffset;
+
+                options[i].GetComponent<RectTransform>().anchoredPosition = rotatedOffset;
+
+                //increment the angle.
+                angle += angleOffset;
+            }
+            for(; i < options.Length; i++)
+            {
+                options[i].gameObject.SetActive(false);
+            }
+        }
+
+    }
+}
