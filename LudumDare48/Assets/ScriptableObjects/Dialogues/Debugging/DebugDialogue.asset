@@ -22,3 +22,6 @@ MonoBehaviour:
     playerReplies:
     - lol
     - i know
+  - npcText: cya
+    playerReplies: []
+  endOfDialogueRepeatable: 

@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 563577268}
   - component: {fileID: 563577270}
   - component: {fileID: 563577269}
+  - component: {fileID: 563577271}
   m_Layer: 5
   m_Name: NPC_Dialogue
   m_TagString: Untagged
@@ -196,6 +197,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 563577267}
   m_CullTransparentMesh: 0
+--- !u!225 &563577271
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563577267}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &838260738
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,6 +267,7 @@ MonoBehaviour:
   distance: 400
   angleOffset: 15
   npcText: {fileID: 1419005184}
+  npcGroup: {fileID: 563577271}
   textSpeed: 15
   optionsGroup: {fileID: 1631760399}
   dialogue: {fileID: 11400000, guid: f11cff4716cf0df4db59e39ed0caf305, type: 2}

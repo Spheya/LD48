@@ -11,6 +11,11 @@ namespace LD48
         DialogueSnippet[] snippets;
         private int currentSnippet = -1;
 
+        [SerializeField]
+        private string endOfDialogueRepeatable;
+
+        public string OutOfDialogueText => endOfDialogueRepeatable;
+
         ///<summary>returns false when it hits the end, snippet is given through the out</summary>
         public bool Advance(out DialogueSnippet snippet)
         {

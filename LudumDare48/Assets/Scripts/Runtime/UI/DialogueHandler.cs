@@ -16,6 +16,8 @@ namespace LD48
 
         [SerializeField]
         private TextMeshProUGUI npcText;
+        [SerializeField]
+        private CanvasGroup npcGroup;
         [SerializeField, Tooltip("how many characters per second?")]
         private float textSpeed = 10;
         [SerializeField]
@@ -40,6 +42,13 @@ namespace LD48
         public void Init(Dialogue dia)
         {
             dialogue = dia;
+            if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
+            {
+                //already finished dialogue with this character.
+                DoDialogueEndSequence();
+            }
+            else 
+                ShowDialogue(snippet);
         }
 
         //The player has clicked an option and the dialogue should now continue.
@@ -50,9 +59,30 @@ namespace LD48
             if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
             { 
                 //TODO: handle the dialogue ending.
-                gameObject.SetActive(false);
+                npcGroup.DOFade(0, 1).OnComplete(() => gameObject.SetActive(false)).PlayForward(); //TODO: OnComplete => free player so they can move again.
+                //gameObject.SetActive(false);
                 return;
             }
+
+            ShowDialogue(snippet);
+        }
+
+        private void DoDialogueEndSequence()
+        {
+            var sequence = DOTween.Sequence();
+            //start by displaying the text.
+            float textDuration = (float) dialogue.OutOfDialogueText.Length / textSpeed;
+            sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, dialogue.OutOfDialogueText, textDuration));
+
+            //after a 2s delay, fade out what the npc is saying.
+            sequence.Append(npcGroup.DOFade(0, 1).SetDelay(2f)); //TODO: OnComplete => free player so they can move again.
+
+            //start the sequence.
+            sequence.PlayForward();
+        }
+
+        private void ShowDialogue(Dialogue.DialogueSnippet snippet)
+        {
             //clear the npc chat box.
             npcText.text = "";
 
