@@ -1515,7 +1515,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60d681b252a092541a0ebf30d0a18f15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameScene: DialogueTestScene
+  gameScene: SampleScene
   uiButtons:
   - {fileID: 1514657931}
   - {fileID: 2085108506}

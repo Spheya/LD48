@@ -27,6 +27,8 @@ namespace LD48
         [SerializeField]
         Dialogue dialogue;
 
+        public static event System.Action OnDialogueEnd;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -35,8 +37,6 @@ namespace LD48
                 options[i].Handler = this;
                 options[i].gameObject.SetActive(false);
             }
-            dialogue.Reset();
-            Continue();
         }
 
         public void Init(Dialogue dia)
@@ -59,7 +59,8 @@ namespace LD48
             if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
             { 
                 //TODO: handle the dialogue ending.
-                npcGroup.DOFade(0, 1).OnComplete(() => gameObject.SetActive(false)).PlayForward(); //TODO: OnComplete => free player so they can move again.
+                npcGroup.DOFade(0, 1).PlayForward(); //TODO: OnComplete => free player so they can move again.
+                OnDialogueEnd?.Invoke();
                 //gameObject.SetActive(false);
                 return;
             }
@@ -71,11 +72,13 @@ namespace LD48
         {
             var sequence = DOTween.Sequence();
             //start by displaying the text.
+            npcText.text = "";
             float textDuration = (float) dialogue.OutOfDialogueText.Length / textSpeed;
+            sequence.Append(npcGroup.DOFade(1, 0.5f));
             sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, dialogue.OutOfDialogueText, textDuration));
 
             //after a 2s delay, fade out what the npc is saying.
-            sequence.Append(npcGroup.DOFade(0, 1).SetDelay(2f)); //TODO: OnComplete => free player so they can move again.
+            sequence.Append(npcGroup.DOFade(0, 1).SetDelay(2f).OnComplete(() => OnDialogueEnd?.Invoke())); //TODO: OnComplete => free player so they can move again.
 
             //start the sequence.
             sequence.PlayForward();
@@ -90,6 +93,7 @@ namespace LD48
             var sequence = DOTween.Sequence();
             //1. Fade out all the options.
             sequence.Append(optionsGroup.DOFade(endValue: 0.0f, duration: 0.5f)); //.OnComplete(() => source.Play())
+            sequence.Append(npcGroup.DOFade(1.0f, 0.5f));
             //2. show the new text, then set up the options.
             float textDuration = (float) snippet.npcText.Length / textSpeed;
             sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, snippet.npcText, textDuration).OnComplete(() => SetupOptions(snippet)));

@@ -46,6 +46,12 @@ namespace LD48
         void Start()
         {
             transform = base.transform;
+            DialogueHandler.OnDialogueEnd += Unpause;
+        }
+
+        private void OnDestroy() 
+        {
+            DialogueHandler.OnDialogueEnd -= Unpause;
         }
 
         void Update()
@@ -209,6 +215,12 @@ namespace LD48
             //Could have TriggerExit here aswell, super easy to implement, but very unnecessary for this scope.
         }
 
-        public void SetFree(bool isFree) => this.isPaused = isFree;
+        public void SetPaused(bool paused) 
+        { 
+            this.isPaused = paused;
+            if(isGrounded && paused)
+                velocity.x = 0;
+        }
+        private void Unpause() => SetPaused(false);
     }
 }
