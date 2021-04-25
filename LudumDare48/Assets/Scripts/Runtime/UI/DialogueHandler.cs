@@ -40,16 +40,17 @@ namespace LD48
         public void Init(Dialogue dia)
         {
             dialogue = dia;
-
         }
 
         //The player has clicked an option and the dialogue should now continue.
+        //Which option is clicked is completely irrelevant rn
         public void Continue()
         {
             //advance the dialogue to the next bit.
             if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
             { 
                 //TODO: handle the dialogue ending.
+                gameObject.SetActive(false);
                 return;
             }
             //clear the npc chat box.
@@ -62,17 +63,33 @@ namespace LD48
             //2. show the new text, then set up the options.
             float textDuration = (float) snippet.npcText.Length / textSpeed;
             sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, snippet.npcText, textDuration).OnComplete(() => SetupOptions(snippet)));
-            //3. fade the options back in.
-            sequence.Append(optionsGroup.DOFade(endValue: 1.0f, duration: 0.5f).SetDelay(0.5f));
+            //3. fade the options back in if necessary
+            if(snippet.playerReplies.Length > 0)
+                sequence.Append(optionsGroup.DOFade(endValue: 1.0f, duration: 0.5f).SetDelay(0.5f));
             //4. start the sequence.
             sequence.PlayForward();
         }
 
-        //TODO: Handle when 0 replies are given. Wait for a short delay, then wait for player input, and continue maybe?
         private void SetupOptions(Dialogue.DialogueSnippet snippet)
         {
             int i = 0;
             int replyCount = snippet.playerReplies.Length;
+            if(replyCount == 0)
+            {
+                //hide all options.
+                for(; i < options.Length; i++)
+                    options[i].gameObject.SetActive(false);
+
+                //Wait for a short delay, then wait for player input
+                StartCoroutine(WaitForKeyPress());
+                IEnumerator WaitForKeyPress()
+                {
+                    yield return new WaitForSeconds(1f);
+                    yield return new WaitUntil(() => Input.anyKeyDown);
+                    Continue();
+                }
+                return;
+            }
             //the total spread of the options in degrees.
             float spread = ((float)replyCount - 1f) * angleOffset;
             //start at half the negative spread.
