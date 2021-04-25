@@ -24,7 +24,7 @@ namespace LD48
             //disable buttons, then load the scene.
             for(int i = 0; i < uiButtons.Length; i++)
                 uiButtons[i].interactable = false;
-            SceneManager.LoadScene(gameScene);
+            StartCoroutine(LoadGame());
         }
 
         //just a smooth way to get into the game.
@@ -33,9 +33,10 @@ namespace LD48
             //TODO: fade out the menu music during the transition
             LoadingScreen.Show();
             var operation = SceneManager.LoadSceneAsync(gameScene);
+            float startTime = Time.time;
             operation.allowSceneActivation = false;
             //when the scene cant auto activate, progress is halted at 0.9, so check for that.
-            yield return new WaitUntil(() => operation.progress >= 0.9f);
+            yield return new WaitUntil(() => operation.progress >= 0.9f && Time.time - startTime >= 1.4f);
             LoadingScreen.Hide();
             operation.allowSceneActivation = true;
         }

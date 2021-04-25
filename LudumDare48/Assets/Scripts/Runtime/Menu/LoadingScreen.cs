@@ -90,7 +90,7 @@ namespace LD48
         {
             if(monoInstance)
                 return;
-            UnityEngine.SceneManagement.SceneManager.LoadScene("LoadingScreen");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("LoadingScreen", UnityEngine.SceneManagement.LoadSceneMode.Additive);
         }
 
     }
