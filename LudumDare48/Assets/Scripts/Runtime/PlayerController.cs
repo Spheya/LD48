@@ -115,7 +115,9 @@ namespace LD48
 
             //I HAVE to write this long line because for some retarded reason, unity wont allow CapsuleCollider2D.Cast without a rigidbody???
             //ITS DOING THE EXACT SAME THING, WHY DOESNT ONE WORK WITHOUT A RIGIDBODY????
+            Physics2D.queriesHitTriggers = false; //just make this query ignore triggers real quick <.<
             RaycastHit2D hit = Physics2D.CapsuleCast(origin + collider.offset, collider.size, collider.direction, 0, direction, distance, groundMask);
+            Physics2D.queriesHitTriggers = true;
             Debug.DrawRay(origin, translation.normalized, Color.red);
             //4. update velocity based on travelled distance.
             if(hit)
@@ -146,9 +148,11 @@ namespace LD48
             //set up the filter.
             ContactFilter2D filter = new ContactFilter2D();
             filter.useTriggers = true;
+            filter.layerMask = groundMask;
             Collider2D[] results = new Collider2D[5];
             //get the overlap of this collider with others.
-            int c = collider.OverlapCollider(new ContactFilter2D(), results);
+            Physics2D.queriesHitTriggers = true;
+            int c = collider.OverlapCollider(filter, results);
             //reset the verify buffer
             triggerVerifyBuffer.Clear();
 
@@ -164,7 +168,7 @@ namespace LD48
                     if(!knownTriggers.Contains(triggerID))
                     {
                         //a benefit of writing our own "custom physics" is that we can exchange this for, or just add entirely new messages or events.
-                        col.SendMessage("OnTriggerEnter2D", collider);
+                        col.SendMessage("OnTriggerEnter2D", collider, SendMessageOptions.DontRequireReceiver);
                         print("found trigger");
                         knownTriggers.Add(triggerID);
                     }
