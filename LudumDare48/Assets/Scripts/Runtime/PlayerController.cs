@@ -27,6 +27,8 @@ namespace LD48
         private float speed, jumpSpeed = 1.5f;
         [SerializeField]
         private new SpriteRenderer renderer;
+        [SerializeField]
+        private float gravity = 10.0f;
 
 #region ANIMATION
         [SerializeField]
@@ -114,7 +116,7 @@ namespace LD48
             //1. Do gravity stuff.
             if(!isGrounded)
             {
-                desiredVelocity.y -= 9.81f * deltaTime;
+                desiredVelocity.y -= gravity * deltaTime;
             }
             MoveWithCollision();
 
