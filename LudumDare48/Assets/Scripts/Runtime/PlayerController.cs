@@ -108,7 +108,8 @@ namespace LD48
             groundCheckPos.y += verticalOriginToGroundOffset;
             Physics2D.queriesHitTriggers = false;
             //Collider2D groundCollider = Physics2D.OverlapCircle(groundCheckPos, groundCheckTolerance, groundMask);
-            RaycastHit2D groundHit = Physics2D.CircleCast(origin, groundCheckTolerance, Vector2.down, -verticalGroundCheckOffset, groundMask);
+            float halfHeight = verticalGroundCheckOffset * 0.5f;
+            RaycastHit2D groundHit = Physics2D.CircleCast(origin + new Vector2(0, halfHeight), groundCheckTolerance, Vector2.down, -halfHeight, groundMask);
             if(!isGrounded && groundHit)
                 audioSource.PlayOneShot(landOnGroundSFX);
             isGrounded = groundHit;
