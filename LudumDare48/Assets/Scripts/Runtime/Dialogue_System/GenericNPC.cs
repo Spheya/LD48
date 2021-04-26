@@ -16,7 +16,10 @@ namespace LD48
         private AudioSource audioSource;
         [SerializeField]
         private AudioClip voice;
+        [SerializeField]
+        private UnityEngine.Events.UnityEvent onStartDialogue, onDialogueComplete;
 
+        private bool dialogueDoneAlready = false;
         private bool playerInRange = false;
         private PlayerController player;
 
@@ -31,6 +34,9 @@ namespace LD48
             {
                 speechBubble.SetActive(false);
                 player.SetPaused(true);
+                onStartDialogue?.Invoke();
+                if(!dialogueDoneAlready)
+                    DialogueHandler.OnDialogueEnd += DialogueEnded;
                 handler.Init(dialogue, audioSource, voice);
             }
         }
@@ -49,6 +55,16 @@ namespace LD48
                 player = null;
                 playerInRange = false;
                 speechBubble.SetActive(false);
+            }
+        }
+
+        private void DialogueEnded()
+        {
+            if(!dialogueDoneAlready)
+            {
+                dialogueDoneAlready = true;
+                onDialogueComplete?.Invoke();
+                DialogueHandler.OnDialogueEnd -= DialogueEnded;
             }
         }
     }

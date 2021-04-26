@@ -92,11 +92,10 @@ namespace LD48
         {
             //clear the npc chat box.
             npcText.text = "";
-
             //create the sequence.
             var sequence = DOTween.Sequence();
             //1. Fade out all the options.
-            sequence.Append(optionsGroup.DOFade(endValue: 0.0f, duration: 0.5f)); //.OnComplete(() => source.Play())
+            sequence.Append(optionsGroup.DOFade(endValue: 0.0f, duration: 0.5f).OnStart(() => optionsGroup.interactable = false)); //.OnComplete(() => source.Play())
             sequence.Append(npcGroup.DOFade(1.0f, 0.5f).OnComplete(() => npcAudioSource.PlayOneShot(npcVoiceClip)));
             //2. show the new text, then set up the options.
             float textDuration = (float) snippet.npcText.Length / textSpeed;
@@ -122,7 +121,7 @@ namespace LD48
                 StartCoroutine(WaitForKeyPress());
                 IEnumerator WaitForKeyPress()
                 {
-                    yield return new WaitForSeconds(1f);
+                    yield return new WaitForSeconds(2f);
                     yield return new WaitUntil(() => Input.anyKeyDown);
                     Continue();
                 }
@@ -150,6 +149,7 @@ namespace LD48
             {
                 options[i].gameObject.SetActive(false);
             }
+            optionsGroup.interactable = true;
         }
 
     }
