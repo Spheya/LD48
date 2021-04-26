@@ -1,6 +1,8 @@
 ﻿using TMPro;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 namespace LD48
 {
@@ -91,6 +93,18 @@ namespace LD48
             if(monoInstance)
                 return;
             UnityEngine.SceneManagement.SceneManager.LoadScene("LoadingScreen", UnityEngine.SceneManagement.LoadSceneMode.Additive);
+        }
+
+        public static IEnumerator LoadScene(string scene)
+        {
+            LoadingScreen.Show();
+            var operation = SceneManager.LoadSceneAsync(scene);
+            float startTime = Time.time;
+            operation.allowSceneActivation = false;
+            //when the scene cant auto activate, progress is halted at 0.9, so check for that.
+            yield return new WaitUntil(() => operation.progress >= 0.9f && Time.time - startTime >= 1.4f);
+            LoadingScreen.Hide();
+            operation.allowSceneActivation = true;
         }
 
     }
