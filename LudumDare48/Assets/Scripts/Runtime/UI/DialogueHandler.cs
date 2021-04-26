@@ -28,6 +28,8 @@ namespace LD48
         Dialogue dialogue;
 
         public static event System.Action OnDialogueEnd;
+        private AudioSource npcAudioSource;
+        private AudioClip npcVoiceClip;
 
         // Start is called before the first frame update
         void Start()
@@ -39,9 +41,11 @@ namespace LD48
             }
         }
 
-        public void Init(Dialogue dia)
+        public void Init(Dialogue dia, AudioSource audioSource, AudioClip npcVoice)
         {
             dialogue = dia;
+            npcAudioSource = audioSource;
+            npcVoiceClip = npcVoice;
             if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
             {
                 //already finished dialogue with this character.
@@ -74,7 +78,7 @@ namespace LD48
             //start by displaying the text.
             npcText.text = "";
             float textDuration = (float) dialogue.OutOfDialogueText.Length / textSpeed;
-            sequence.Append(npcGroup.DOFade(1, 0.5f));
+            sequence.Append(npcGroup.DOFade(1, 0.5f).OnComplete(() => npcAudioSource.PlayOneShot(npcVoiceClip)));
             sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, dialogue.OutOfDialogueText, textDuration));
 
             //after a 2s delay, fade out what the npc is saying.
@@ -93,7 +97,7 @@ namespace LD48
             var sequence = DOTween.Sequence();
             //1. Fade out all the options.
             sequence.Append(optionsGroup.DOFade(endValue: 0.0f, duration: 0.5f)); //.OnComplete(() => source.Play())
-            sequence.Append(npcGroup.DOFade(1.0f, 0.5f));
+            sequence.Append(npcGroup.DOFade(1.0f, 0.5f).OnComplete(() => npcAudioSource.PlayOneShot(npcVoiceClip)));
             //2. show the new text, then set up the options.
             float textDuration = (float) snippet.npcText.Length / textSpeed;
             sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, snippet.npcText, textDuration).OnComplete(() => SetupOptions(snippet)));

@@ -26,6 +26,10 @@ namespace LD48
         [SerializeField]
         private float gravity = 10.0f;
         [SerializeField]
+        private AudioSource audioSource;
+        [SerializeField]
+        private AudioClip jumpSFX, landOnGroundSFX;
+        [SerializeField]
         private float maxVerticalVelocity = 10.0f;
 
 #region ANIMATION
@@ -79,7 +83,10 @@ namespace LD48
 
             desiredVelocity.x = movementInput * speed;
             if(jumpInput && isGrounded)
+            {
+                audioSource.PlayOneShot(jumpSFX);
                 desiredVelocity.y = jumpSpeed;
+            }
 
         }
 
@@ -102,6 +109,8 @@ namespace LD48
             Physics2D.queriesHitTriggers = false;
             //Collider2D groundCollider = Physics2D.OverlapCircle(groundCheckPos, groundCheckTolerance, groundMask);
             RaycastHit2D groundHit = Physics2D.CircleCast(origin, groundCheckTolerance, Vector2.down, -verticalGroundCheckOffset, groundMask);
+            if(!isGrounded && groundHit)
+                audioSource.PlayOneShot(landOnGroundSFX);
             isGrounded = groundHit;
             //0.75 snap to the surface.
             if(isGrounded && velocity.y <= 0)
