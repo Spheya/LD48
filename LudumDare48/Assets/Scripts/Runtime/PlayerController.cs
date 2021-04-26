@@ -25,6 +25,8 @@ namespace LD48
         private new SpriteRenderer renderer;
         [SerializeField]
         private float gravity = 10.0f;
+        [SerializeField]
+        private float maxVerticalVelocity = 10.0f;
 
 #region ANIMATION
         [SerializeField]
@@ -119,6 +121,7 @@ namespace LD48
             if(!isGrounded)
             {
                 desiredVelocity.y -= gravity * deltaTime;
+                desiredVelocity.y = Mathf.Max(desiredVelocity.y, -maxVerticalVelocity);
             }
             MoveWithCollision();
 
