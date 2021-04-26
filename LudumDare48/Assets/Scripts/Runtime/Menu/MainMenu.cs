@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 namespace LD48
 {
@@ -13,6 +14,9 @@ namespace LD48
 
         [SerializeField]
         private Button[] uiButtons;
+
+        [SerializeField]
+        private AudioSource menuBGM;
 
         private void Start() 
         {
@@ -32,6 +36,7 @@ namespace LD48
         {
             //TODO: fade out the menu music during the transition
             LoadingScreen.Show();
+            menuBGM.DOFade(0, 1f).PlayForward();
             var operation = SceneManager.LoadSceneAsync(gameScene);
             float startTime = Time.time;
             operation.allowSceneActivation = false;
