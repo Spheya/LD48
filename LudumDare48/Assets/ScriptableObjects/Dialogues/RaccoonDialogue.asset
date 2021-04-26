@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1058f80cefc2dd42bcc142ddbb1f220, type: 3}
+  m_Name: RaccoonDialogue
+  m_EditorClassIdentifier: 
+  snippets:
+  - npcText: ...
+    playerReplies:
+    - What now?
+    - Where are we?
+  - npcText: This is it, the final leap
+    playerReplies:
+    - What will happen?
+    - What is beyond?
+  - npcText: Nobody knows exactly
+    playerReplies:
+    - Aren't you scared?
+    - I'm scared
+  - npcText: Frankly, it's a bit scary yes. But I'm glad that I got to live my life
+      and share it with others.
+    playerReplies: []
+  - npcText: Whatever is beyond this leap, I will accept it
+    playerReplies: []
+  endOfDialogueRepeatable: ...
