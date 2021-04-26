@@ -17,7 +17,6 @@ MonoBehaviour:
     playerReplies:
     - Sup
     - hi
-    - '*flushes*'
   - npcText: u stupid man
     playerReplies:
     - lol
