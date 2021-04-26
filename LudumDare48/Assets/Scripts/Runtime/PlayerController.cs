@@ -123,11 +123,11 @@ namespace LD48
                 desiredVelocity.y -= gravity * deltaTime;
                 desiredVelocity.y = Mathf.Max(desiredVelocity.y, -maxVerticalVelocity);
             }
-            MoveWithCollision();
+            MoveWithCollision(true);
 
             //Making this bit a local method because i shouldnt think about using this outside of this context
             //also because it needs to be able to call itself without fucking things up lol.
-            void MoveWithCollision()
+            void MoveWithCollision(bool allowRecursion)
             {
                 //2. use the desired velocity to check where to go
                 Vector2 translation = desiredVelocity * deltaTime;
@@ -136,7 +136,7 @@ namespace LD48
                 //3. cast the collider, check for collision on the way there.
                 //RaycastHit2D[] hits = new RaycastHit2D[5];
                 float distance = translation.magnitude;
-                Vector2 direction = translation / distance;
+                Vector2 direction = translation.normalized;
 
                 //I HAVE to write this long line because for some stupid reason, unity wont allow CapsuleCollider2D.Cast without a rigidbody???
                 //ITS DOING THE EXACT SAME THING, WHY DOESNT ONE WORK WITHOUT A RIGIDBODY????
@@ -150,16 +150,18 @@ namespace LD48
                     //tiny distance away stops the player from getting stuck, but causes some stutter.
                     Vector2 maxTravelDist = Mathf.Max(0, hit.distance - 0.05f) * direction; 
                     //if bumping into the ceiling, reset velocity to 0, the player should just fall down afterwards.
-                    if(hit.normal.y < -0.9f && desiredVelocity.y > 0f)
+                    if(hit.normal.y < -0.9f && desiredVelocity.y > 0.0f)
                     {
-                        desiredVelocity.y = 0;
-                        MoveWithCollision();
+                        desiredVelocity.y = 0.0f;
+                        if(desiredVelocity.sqrMagnitude > 0.1f && allowRecursion)
+                            MoveWithCollision(false);
                         return;
                     }
-                    if((hit.normal.x > 0.9f && desiredVelocity.x < 0f) || (hit.normal.x < -0.9f && desiredVelocity.x > 0f))
+                    if((hit.normal.x > 0.9f && desiredVelocity.x < 0.0f) || (hit.normal.x < -0.9f && desiredVelocity.x > 0f))
                     {
-                        desiredVelocity.x = 0;
-                        MoveWithCollision();
+                        desiredVelocity.x = 0.0f;
+                        if(desiredVelocity.sqrMagnitude > 0.1f && allowRecursion)
+                            MoveWithCollision(false);
                         return;
                     }
                     transform.position = origin + maxTravelDist;
