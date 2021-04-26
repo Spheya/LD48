@@ -98,12 +98,13 @@ namespace LD48
             Vector2 groundCheckPos = origin;
             groundCheckPos.y += verticalOriginToGroundOffset;
             Physics2D.queriesHitTriggers = false;
-            Collider2D groundCollider = Physics2D.OverlapCircle(groundCheckPos, groundCheckTolerance, groundMask);
-            isGrounded = groundCollider;
+            //Collider2D groundCollider = Physics2D.OverlapCircle(groundCheckPos, groundCheckTolerance, groundMask);
+            RaycastHit2D groundHit = Physics2D.CircleCast(origin, groundCheckTolerance, Vector2.down, -verticalGroundCheckOffset, groundMask);
+            isGrounded = groundHit;
             //0.75 snap to the surface.
             if(isGrounded && velocity.y <= 0)
             {
-                float groundY = groundCollider.bounds.max.y - verticalOriginToGroundOffset;
+                float groundY = groundHit.point.y - verticalOriginToGroundOffset;
                 if(Mathf.Abs(groundY - origin.y) <= groundSnapDistance)
                 {
                     origin.y = groundY; 
@@ -130,7 +131,7 @@ namespace LD48
                 Vector2 projectedPosition = origin + translation;
 
                 //3. cast the collider, check for collision on the way there.
-                RaycastHit2D[] hits = new RaycastHit2D[5];
+                //RaycastHit2D[] hits = new RaycastHit2D[5];
                 float distance = translation.magnitude;
                 Vector2 direction = translation / distance;
 
