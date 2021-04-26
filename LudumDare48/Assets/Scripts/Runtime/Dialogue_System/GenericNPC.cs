@@ -10,19 +10,42 @@ namespace LD48
         private Dialogue dialogue;
         [SerializeField]
         private DialogueHandler handler;
+        [SerializeField]
+        private GameObject speechBubble;
+
+        private bool playerInRange = false;
+        private PlayerController player;
 
         private void Start() 
         {
             dialogue.Reset();    
         }
 
+        private void Update() 
+        {
+            if(playerInRange && Input.GetKeyDown(KeyCode.E)) //TODO: display visual cue
+            {
+                speechBubble.SetActive(false);
+                player.SetPaused(true);
+                handler.Init(dialogue);
+            }
+        }
+
         private void OnTriggerEnter2D(Collider2D other) 
         {
-            handler.Init(dialogue);
-            other.GetComponent<PlayerController>().SetPaused(true);
+            player = other.GetComponent<PlayerController>();
+            playerInRange = player;
+            speechBubble.SetActive(playerInRange);
         }
 
         private void OnTriggerExit2D(Collider2D other)
-            => print("On trigger exit 2d");
+        {
+            if(playerInRange)
+            {
+                player = null;
+                playerInRange = false;
+                speechBubble.SetActive(false);
+            }
+        }
     }
 }
