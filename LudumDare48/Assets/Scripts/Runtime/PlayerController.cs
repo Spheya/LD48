@@ -12,10 +12,6 @@ namespace LD48
         //by default starts as unpaused.
         private bool isPaused = false;
 
-        //a maximum of 5 trigger colliders can be handled at the same time.
-        private List<int> knownTriggers = new List<int>(5);
-        private List<int> triggerVerifyBuffer = new List<int>(5);
-
         //the attached collider.
         [SerializeField]
         private new CapsuleCollider2D collider;
@@ -44,6 +40,11 @@ namespace LD48
         private Vector2 velocity;
         private Vector2 desiredVelocity;
         private bool isGrounded = true; //should always start on the ground, so why not.
+
+        //a maximum of 5 trigger colliders can be handled at the same time.
+        private List<int> knownTriggers = new List<int>(5);
+        private List<int> triggerVerifyBuffer = new List<int>(5);
+        private Dictionary<int, Collider2D> instanceIDToCollider = new Dictionary<int, Collider2D>(5);
 
         void Start()
         {
@@ -205,6 +206,7 @@ namespace LD48
                     {
                         //a benefit of writing our own "custom physics" is that we can exchange this for, or just add entirely new messages or events.
                         col.SendMessage("OnTriggerEnter2D", collider, SendMessageOptions.DontRequireReceiver);
+                        instanceIDToCollider.Add(triggerID, col);
                         //print("found trigger");
                         knownTriggers.Add(triggerID);
                     }
@@ -213,8 +215,23 @@ namespace LD48
 
             //verify knownTriggers with the buffer.
             //I know linq ew, but its much simpler rn, not too concerned with optimization, this game is super small.
-            knownTriggers = new List<int>(knownTriggers.Where(item => triggerVerifyBuffer.Contains(item)));
-            //Could have TriggerExit here aswell, super easy to implement, but very unnecessary for this scope.
+            //knownTriggers = new List<int>(knownTriggers.Where(item => triggerVerifyBuffer.Contains(item)));
+            //Send OnTriggerExit2D to any objects required.
+            List<int> verifiedTriggers = new List<int>(5);
+
+            int triggerCount = knownTriggers.Count;
+            for(int i = 0; i < triggerCount; i++)
+            {
+                int id = knownTriggers[i];
+                if(triggerVerifyBuffer.Contains(id))
+                    verifiedTriggers.Add(id);
+                else
+                {
+                    instanceIDToCollider[id].SendMessage("OnTriggerExit2D", collider, SendMessageOptions.DontRequireReceiver);
+                    instanceIDToCollider.Remove(id);
+                }
+            }
+            knownTriggers = verifiedTriggers;
         }
 
         public void SetPaused(bool paused) 

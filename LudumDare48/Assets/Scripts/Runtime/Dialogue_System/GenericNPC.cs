@@ -21,5 +21,8 @@ namespace LD48
             handler.Init(dialogue);
             other.GetComponent<PlayerController>().SetPaused(true);
         }
+
+        private void OnTriggerExit2D(Collider2D other)
+            => print("On trigger exit 2d");
     }
 }
