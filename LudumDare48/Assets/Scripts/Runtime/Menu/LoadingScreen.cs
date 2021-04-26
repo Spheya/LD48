@@ -3,6 +3,7 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.UI;
 
 namespace LD48
 {
@@ -23,6 +24,8 @@ namespace LD48
         [SerializeField]
         private TextMeshProUGUI loadingText;
 
+        private Image backgroundImageComponent;
+
         // Start is called before the first frame update
         void Awake()
         {
@@ -32,6 +35,7 @@ namespace LD48
             {
                 monoInstance = this;
                 DontDestroyOnLoad(gameObject);
+                backgroundImageComponent = backgroundImage.GetComponent<Image>();
             }
         }
 
@@ -66,8 +70,10 @@ namespace LD48
 
         public static void Show() => monoInstance._Show();
 
+        private const float saturation = 0.75f, lightness = 0.4f;
         private void _Show()
         {
+            backgroundImageComponent.color = Color.HSVToRGB(Random.value, saturation, lightness);
             Sequence showSequence = DOTween.Sequence();
             //Move the background into place.
             showSequence.Append(backgroundImage.DOAnchorPos(Vector2.zero, duration: 1.0f));
