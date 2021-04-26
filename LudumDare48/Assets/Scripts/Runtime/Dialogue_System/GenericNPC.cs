@@ -12,6 +12,10 @@ namespace LD48
         private DialogueHandler handler;
         [SerializeField]
         private GameObject speechBubble;
+        [SerializeField]
+        private AudioSource audioSource;
+        [SerializeField]
+        private AudioClip voice;
 
         private bool playerInRange = false;
         private PlayerController player;
@@ -27,7 +31,7 @@ namespace LD48
             {
                 speechBubble.SetActive(false);
                 player.SetPaused(true);
-                handler.Init(dialogue);
+                handler.Init(dialogue, audioSource, voice);
             }
         }
 

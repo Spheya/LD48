@@ -28,6 +28,8 @@ namespace LD48
         Dialogue dialogue;
 
         public static event System.Action OnDialogueEnd;
+        private AudioSource npcAudioSource;
+        private AudioClip npcVoiceClip;
 
         // Start is called before the first frame update
         void Start()
@@ -39,9 +41,11 @@ namespace LD48
             }
         }
 
-        public void Init(Dialogue dia)
+        public void Init(Dialogue dia, AudioSource audioSource, AudioClip npcVoice)
         {
             dialogue = dia;
+            npcAudioSource = audioSource;
+            npcVoiceClip = npcVoice;
             if(!dialogue.Advance(out Dialogue.DialogueSnippet snippet))
             {
                 //already finished dialogue with this character.
@@ -75,7 +79,7 @@ namespace LD48
             npcText.text = "";
             float textDuration = (float) dialogue.OutOfDialogueText.Length / textSpeed;
             sequence.Append(npcGroup.DOFade(1, 0.5f));
-            sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, dialogue.OutOfDialogueText, textDuration));
+            sequence.Append(DOTween.To(() => npcText.text, x => npcText.text = x, dialogue.OutOfDialogueText, textDuration).OnStart(() => npcAudioSource?.PlayOneShot(npcVoiceClip)));
 
             //after a 2s delay, fade out what the npc is saying.
             sequence.Append(npcGroup.DOFade(0, 1).SetDelay(2f).OnComplete(() => OnDialogueEnd?.Invoke())); //TODO: OnComplete => free player so they can move again.
